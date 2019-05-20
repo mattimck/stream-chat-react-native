@@ -1,5 +1,5 @@
 import React, { PureComponent } from 'react';
-import { View, Text, Keyboard, Dimensions } from 'react-native';
+import { View, Text, Keyboard, Dimensions, Animated } from 'react-native';
 import { ChannelContext } from '../context';
 import { SuggestionsProvider } from './SuggestionsProvider';
 
@@ -130,12 +130,18 @@ export class ChannelInner extends PureComponent {
 
     this.rootChannelView.measureInWindow((x, y) => {
       const { height: windowHeight } = Dimensions.get('window');
-      this.setState({ channelHeight: windowHeight - y - keyboardHeight });
+      Animated.timing(this.state.channelHeight, {
+        toValue: windowHeight - y - keyboardHeight,
+        duration: 500,
+      }).start();
     });
   };
 
   keyboardDidHide = () => {
-    this.setState({ channelHeight: this.initialHeight });
+    Animated.timing(this.state.channelHeight, {
+      toValue: this.initialHeight,
+      duration: 500,
+    }).start();
   };
 
   componentWillUnmount() {
@@ -463,7 +469,10 @@ export class ChannelInner extends PureComponent {
     },
   }) => {
     // Not to set initial height again.
-    if (!this.initialHeight) this.initialHeight = height;
+    if (!this.initialHeight) {
+      this.initialHeight = height;
+      this.setState({ channelHeight: new Animated.Value(this.initialHeight) });
+    }
   };
 
   render() {
@@ -481,12 +490,11 @@ export class ChannelInner extends PureComponent {
       );
     } else {
       core = (
-        <View
+        <Animated.View
           style={{ display: 'flex', height: this.state.channelHeight }}
           onLayout={this.onLayout}
-          ref={this.setRootChannelView}
-          collapsable={false}
         >
+          <View ref={this.setRootChannelView} collapsable={false} />
           <ChannelContext.Provider value={this.getContext()}>
             <SuggestionsProvider
               handleKeyboardAvoidingViewEnabled={(trueOrFalse) => {
@@ -496,7 +504,7 @@ export class ChannelInner extends PureComponent {
               {this.renderComponent()}
             </SuggestionsProvider>
           </ChannelContext.Provider>
-        </View>
+        </Animated.View>
       );
     }
 
