@@ -83,9 +83,12 @@ class ChannelScreen extends PureComponent {
 
     return (
       <SafeAreaView>
-        <Chat client={chatClient}>
-          <Channel client={chatClient} channel={channel}>
-            <View style={{ display: 'flex', height: '100%' }}>
+        <View style={{ height: 100 }}>
+          <Text>This is header</Text>
+        </View>
+        <View style={{ height: 500 }}>
+          <Chat client={chatClient}>
+            <Channel client={chatClient} channel={channel}>
               <MessageList
                 onThreadSelect={(thread) => {
                   this.props.navigation.navigate('Thread', {
@@ -95,9 +98,9 @@ class ChannelScreen extends PureComponent {
                 }}
               />
               <MessageInput />
-            </View>
-          </Channel>
-        </Chat>
+            </Channel>
+          </Chat>
+        </View>
       </SafeAreaView>
     );
   }

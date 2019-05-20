@@ -1,5 +1,5 @@
 import React, { PureComponent } from 'react';
-import { View, Text, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, Keyboard, Dimensions } from 'react-native';
 import { ChannelContext } from '../context';
 import { SuggestionsProvider } from './SuggestionsProvider';
 
@@ -39,6 +39,7 @@ export class ChannelInner extends PureComponent {
       threadLoadingMore: false,
       threadHasMore: true,
       kavEnabled: true,
+      channelHeight: '100%',
     };
 
     // hard limit to prevent you from scrolling faster than 1 page per 2 seconds
@@ -61,8 +62,9 @@ export class ChannelInner extends PureComponent {
       leading: true,
       trailing: true,
     });
-    this.rootView = false;
+    this.rootChannelView = false;
     this.messageInputBox = false;
+    this.initialHeight = undefined;
   }
 
   static propTypes = {
@@ -111,7 +113,30 @@ export class ChannelInner extends PureComponent {
       this.copyChannelState();
       this.listenToChanges();
     }
+
+    this.keyboardDidShowListener = Keyboard.addListener(
+      'keyboardWillShow',
+      this.keyboardDidShow,
+    );
+    this.keyboardDidHideListener = Keyboard.addListener(
+      'keyboardWillHide',
+      this.keyboardDidHide,
+    );
   }
+
+  keyboardDidShow = (e) => {
+    const keyboardHeight =
+      e.startCoordinates.screenY - e.endCoordinates.screenY;
+
+    this.rootChannelView.measureInWindow((x, y) => {
+      const { height: windowHeight } = Dimensions.get('window');
+      this.setState({ channelHeight: windowHeight - y - keyboardHeight });
+    });
+  };
+
+  keyboardDidHide = () => {
+    this.setState({ channelHeight: this.initialHeight });
+  };
 
   componentWillUnmount() {
     this.props.channel.off(this.handleEvent);
@@ -121,10 +146,8 @@ export class ChannelInner extends PureComponent {
     this._loadMoreThreadFinishedDebounced.cancel();
     this._setStateThrottled.cancel();
     this._unmounted = true;
-
-    // if (this.visibilityListener) {
-    //   Visibility.unbind(this.visibilityListener);
-    // }
+    this.keyboardDidShowListener.remove();
+    this.keyboardDidHideListener.remove();
   }
 
   copyChannelState() {
@@ -429,6 +452,20 @@ export class ChannelInner extends PureComponent {
     return <Indicator listType="message" />;
   };
 
+  setRootChannelView = (o) => {
+    this.rootChannelView = o;
+    // this.rootChannelView.measureInWindow((x, y, height, width) => { this.initialHeight = height; });
+  };
+
+  onLayout = ({
+    nativeEvent: {
+      layout: { height },
+    },
+  }) => {
+    // Not to set initial height again.
+    if (!this.initialHeight) this.initialHeight = height;
+  };
+
   render() {
     let core;
 
@@ -444,12 +481,13 @@ export class ChannelInner extends PureComponent {
       );
     } else {
       core = (
-        <ChannelContext.Provider value={this.getContext()}>
-          <KeyboardAvoidingView
-            behavior={Platform.select({ ios: 'padding', android: null })}
-            enabled={this.state.kavEnabled}
-            keyboardVerticalOffset="80"
-          >
+        <View
+          style={{ display: 'flex', height: this.state.channelHeight }}
+          onLayout={this.onLayout}
+          ref={this.setRootChannelView}
+          collapsable={false}
+        >
+          <ChannelContext.Provider value={this.getContext()}>
             <SuggestionsProvider
               handleKeyboardAvoidingViewEnabled={(trueOrFalse) => {
                 this.setState({ kavEnabled: trueOrFalse });
@@ -457,8 +495,8 @@ export class ChannelInner extends PureComponent {
             >
               {this.renderComponent()}
             </SuggestionsProvider>
-          </KeyboardAvoidingView>
-        </ChannelContext.Provider>
+          </ChannelContext.Provider>
+        </View>
       );
     }
 
