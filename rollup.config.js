@@ -87,16 +87,22 @@ const normalBundle = {
     }),
     external(),
     babel({
+      babelrc: false,
       runtimeHelpers: true,
-      exclude: 'node_modules/**',
+      exclude: ['node_modules/**'],
+      presets: ['@babel/env', '@babel/react'],
+      plugins: [
+        'macros',
+        '@babel/proposal-class-properties',
+        '@babel/transform-runtime',
+        'babel-plugin-styled-components',
+      ],
     }),
     images({
       sourceDir: path.join(__dirname, 'src'),
     }),
     commonjs(),
-    json({
-      include: ['src/i18n/.*'],
-    }),
+    json(),
   ],
 };
 
