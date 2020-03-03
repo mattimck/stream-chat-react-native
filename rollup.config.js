@@ -94,7 +94,9 @@ const normalBundle = {
       sourceDir: path.join(__dirname, 'src'),
     }),
     commonjs(),
-    json(),
+    json({
+      include: ['src/i18n/.*'],
+    }),
   ],
 };
 

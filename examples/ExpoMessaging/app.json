@@ -23,6 +23,9 @@
     "assetBundlePatterns": [
       "**/*"
     ],
+    "packagerOpts": {
+      "sourceExts": ["js", "ts", "tsx"]
+    },
     "ios": {
       "supportsTablet": true
     }
