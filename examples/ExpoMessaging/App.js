@@ -1,5 +1,6 @@
 import React, { PureComponent } from 'react';
 import { View, SafeAreaView, TouchableOpacity, Text } from 'react-native';
+
 import { StreamChat } from 'stream-chat';
 import {
   Chat,
@@ -53,7 +54,9 @@ const options = {
  * Start playing with streami18n instance here:
  * Please refer to description of this PR for details: https://github.com/GetStream/stream-chat-react-native/pull/150
  */
-const streami18n = new Streami18n('nl');
+const streami18n = new Streami18n({
+  language: 'hi'
+});
 
 class ChannelListScreen extends PureComponent {
   static navigationOptions = () => ({
