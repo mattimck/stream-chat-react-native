@@ -1,5 +1,6 @@
 import React from 'react';
-import styled, { withTheme } from '@stream-io/styled-components';
+const withTheme = require('@stream-io/styled-components').withTheme;
+import styled from '@stream-io/styled-components';
 
 import { renderText, capitalize } from '../../utils';
 import PropTypes from 'prop-types';
